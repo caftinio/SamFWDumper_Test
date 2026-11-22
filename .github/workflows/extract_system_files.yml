@@ -106,10 +106,11 @@ jobs:
             lz4 \
             unzip \
             curl \
+            binutils \
             android-sdk-libsparse-utils \
             e2fsprogs \
-            f2fs-tools \
-            linux-modules-extra-$(uname -r)
+            f2fs-tools
+          sudo apt-get install -y linux-modules-extra-aws || true
 
       - name: Make tools executable
         run: chmod +x tools/android-tools/* tools/erofs-utils/* upload_gofile.sh scripts/extract_system_files.sh
