@@ -33,7 +33,9 @@ jobs:
           sudo apt-get install -y jq curl wget
 
       - name: Run SamFWDumper
-        run: bash scripts/full_fwfetch.sh "${{ github.event.inputs.url }}"
+        run: |
+          bash scripts/full_fwfetch.sh \
+            "${{ github.event.inputs.url }}"
 
       - name: Get Firmware Info
         id: fwinfo
@@ -59,11 +61,26 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          GOFILE_URL=$(cat download_url.txt 2>/dev/null || echo "Upload failed")
+          ZIP_FILE=$(ls -t *.zip 2>/dev/null | head -1)
+          if [ ! -f "$ZIP_FILE" ]; then
+            echo "❌ No zip file found to upload"
+            exit 1
+          fi
+
           NOTES_FILE=$(mktemp)
-          echo "${GOFILE_URL}" > "$NOTES_FILE"
+          LINKS_FILE="links.txt"
+          > "$LINKS_FILE"
+
+          if bash upload_gofile.sh "$ZIP_FILE"; then
+            GOFILE_URL=$(cat download_url.txt)
+            echo "${GOFILE_URL}" > "$LINKS_FILE"
+          else
+            echo "❌ GoFile upload failed" > "$LINKS_FILE"
+          fi
+
           gh release create "${{ steps.fwinfo.outputs.release_tag }}" \
             --title "${{ steps.fwinfo.outputs.ap_code }} | ${{ steps.fwinfo.outputs.csc_code }}" \
-            --notes-file "$NOTES_FILE"
-          rm -f "$NOTES_FILE"
+            --notes-file "$LINKS_FILE"
+
+          rm -f "$NOTES_FILE" "$LINKS_FILE"
           
