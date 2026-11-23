@@ -28,9 +28,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y jq curl
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl wget
 
-      - name: Download and Upload
+      - name: Run SamFWDumper
         run: bash scripts/full_fwfetch.sh "${{ github.event.inputs.url }}"
 
       - name: Get Firmware Info
@@ -53,7 +55,7 @@ jobs:
           echo "csc_code=$CSC_CODE" >> $GITHUB_OUTPUT
           echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Create Release with GoFile Link
+      - name: Upload to GoFile
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
