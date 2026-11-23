@@ -106,6 +106,7 @@ jobs:
             lz4 \
             unzip \
             curl \
+            wget \
             binutils \
             android-sdk-libsparse-utils \
             e2fsprogs \
@@ -115,7 +116,7 @@ jobs:
       - name: Make tools executable
         run: chmod +x tools/android-tools/* tools/erofs-utils/* upload_gofile.sh scripts/extract_system_files.sh
 
-      - name: Run System Files Extraction
+      - name: Run SamFWDumper
         run: |
           bash scripts/extract_system_files.sh \
             "${{ github.event.inputs.url }}" \
