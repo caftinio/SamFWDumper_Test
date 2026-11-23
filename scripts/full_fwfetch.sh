@@ -14,12 +14,12 @@ set -e
 echo "═══════════════════════════════════════"
 echo "   Samsung Full Firmware Fetcher"
 echo "═══════════════════════════════════════"
+echo ""
 
 URL="$1"
 [ -z "$URL" ] && { echo "❌ No URL provided"; exit 1; }
 
-echo ""
-echo "[1/2] Downloading..."
+echo "Downloading..."
 START_TS=$(date +%s)
 wget -q --no-check-certificate --content-disposition "$URL"
 
@@ -32,6 +32,7 @@ ELAPSED=$(( END_TS - START_TS ))
 [ "$ELAPSED" -lt 1 ] && ELAPSED=1
 SPEED_MB=$(( FILESIZE / ELAPSED / 1048576 ))
 STAMP=$(date -d "@$END_TS" '+%Y-%m-%d | %H:%M:%S')
+
 echo "✓ Downloaded: $ZIP_FILE"
 echo "  $(numfmt --to=iec $FILESIZE) | $STAMP | ${SPEED_MB} MB/s"
 
@@ -40,9 +41,5 @@ AP_CODE=$(echo "$ZIP_FILE" | sed 's/\.zip$//' | tr '_' '\n' | grep -E '^[A-Z][A-
 echo "$CSC_CODE" > csc_code.txt
 echo "$AP_CODE" > ap_code.txt
 echo "Firmware: $AP_CODE | CSC: $CSC_CODE"
-
 echo ""
-echo "[2/2] Uploading..."
-bash upload_gofile.sh "$ZIP_FILE"
-echo "    - $(cat download_url.txt 2>/dev/null || echo 'link')"
 echo "✓ Done"
