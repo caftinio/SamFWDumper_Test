@@ -114,6 +114,7 @@ jobs:
             lz4 \
             unzip \
             curl \
+            wget \
             binutils \
             android-sdk-libsparse-utils \
             e2fsprogs \
@@ -123,7 +124,7 @@ jobs:
       - name: Make tools executable
         run: chmod +x tools/android-tools/* tools/erofs-utils/* upload_gofile.sh scripts/extract_images.sh
 
-      - name: Run Images Extraction
+      - name: Run SamFWDumper
         run: |
           PARTITIONS=""
           ${{ github.event.inputs.extract_system }} && PARTITIONS="$PARTITIONS system"
@@ -141,14 +142,14 @@ jobs:
           ${{ github.event.inputs.extract_vbmeta_system }} && PARTITIONS="$PARTITIONS vbmeta_system"
           ${{ github.event.inputs.extract_dtbo }} && PARTITIONS="$PARTITIONS dtbo"
           ${{ github.event.inputs.extract_recovery }} && PARTITIONS="$PARTITIONS recovery"
-          
+
           PARTITIONS="${PARTITIONS# }"
-          
+
           if [ -z "$PARTITIONS" ]; then
             echo "❌ No partitions selected! Please check at least one box."
             exit 1
           fi
-          
+
           bash scripts/extract_images.sh \
             "${{ github.event.inputs.url }}" \
             "${{ github.event.inputs.compression }}" \
@@ -179,7 +180,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ ! -d "processed" ] || [ -z "$(ls -A processed)" ]; then
+          if [ ! -d "output" ] || [ -z "$(ls -A output)" ]; then
             echo "❌ No files to upload"
             exit 1
           fi
@@ -188,7 +189,7 @@ jobs:
           LINKS_FILE="links.txt"
           > "$LINKS_FILE"
 
-          for FILE in processed/*; do
+          for FILE in output/*; do
             [ -f "$FILE" ] || continue
             BASENAME=$(basename "$FILE")
             if bash upload_gofile.sh "$FILE"; then
@@ -212,7 +213,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ ! -d "processed" ] || [ -z "$(ls -A processed)" ]; then
+          if [ ! -d "output" ] || [ -z "$(ls -A output)" ]; then
             echo "❌ No files to upload"
             exit 1
           fi
@@ -221,7 +222,7 @@ jobs:
           ASSETS=()
           SIZE_LIMIT=2147483648
 
-          for FILE in processed/*; do
+          for FILE in output/*; do
             [ -f "$FILE" ] || continue
             FILESIZE=$(stat -c%s "$FILE")
             BASENAME=$(basename "$FILE")
